@@ -1,0 +1,102 @@
+## lwlogger.spec.in
+##
+##    GPIO logger for LiveWire.
+##
+##    Copyright (C) 2016  Fred Gleason <fredg@paravelsystems.com>
+##
+##    This program is free software; you can redistribute it and/or modify
+##    it under the terms of version 2 of the GNU General Public License as
+##    published by the Free Software Foundation;
+##
+##    This program is distributed in the hope that it will be useful,
+##    but WITHOUT ANY WARRANTY; without even the implied warranty of
+##    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##    GNU General Public License for more details.
+##
+##    You should have received a copy of the GNU General Public License
+##    along with this program; if not, write to the Free Software
+##    Foundation, Inc., 59 Temple Place, Suite 330, 
+##    Boston, MA  02111-1307  USA
+##
+
+Summary: GPIO logger for LiveWire networks
+Name: lwlogger
+Version: @VERSION@
+Release: @RPM_RELEASE@%{?dist}
+License: GPLv2
+Packager: Fred Gleason <fredg@paravelsystems.com>
+Group: Productivity/Multimedia/Other
+Source: %{name}-@VERSION@.tar.gz
+BuildRequires: qt-devel switchyard-devel
+BuildRoot: /var/tmp/%{name}-@VERSION@
+
+
+%description
+LWLogger is a utility for logging LiveWire GPIO events.
+
+
+%prep
+
+
+%setup
+
+
+%build
+%configure
+make
+
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/var/cache/aoip
+
+%post
+if test "@DISTRO@" = "suse" ; then
+  PACKAGE_DOC_DIR=%_docdir/%{name}
+fi
+if test "@DISTRO@" = "redhat" ; then
+  PACKAGE_DOC_DIR=%_docdir/%{name}-@VERSION@
+fi
+if test ! -f /etc/lwlogger.conf ; then
+    cp $PACKAGE_DOC_DIR/lwlogger-sample.conf /etc/lwlogger.conf
+fi
+if [ -x %{_bindir}/systemctl ] ; then
+  systemctl daemon-reload
+fi
+
+
+%preun
+if [ -x %{_bindir}/systemctl ] ; then
+  systemctl stop lwlogger
+fi
+
+
+%postun
+if [ -x %{_bindir}/systemctl ] ; then
+  systemctl daemon-reload
+fi
+
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
+%files
+%defattr(-,root,root)
+%{_sbindir}/lwlogger
+%{_mandir}/man5/lwlogger.conf.5.gz
+%{_mandir}/man8/lwlogger.8.gz
+/usr/lib/systemd/system/lwlogger.service
+%dir /var/cache/aoip
+%doc AUTHORS
+%doc ChangeLog
+%doc COPYING 
+%doc NEWS 
+%doc README 
+%doc conf/lwlogger-sample.conf
+
+
+%changelog
+* Mon Dec 26 2016 Fred Gleason <fredg@paravelsystems.com>
+-- Initial RPM creation.
