@@ -37,7 +37,9 @@ MainObject::MainObject(QObject *parent)
   //
   // Configuration
   //
-  main_config=new Config();
+  main_config=new Config(this);
+  connect(main_config,SIGNAL(watchdogStateChanged(int,int,bool)),
+	  this,SLOT(watchdogStateChangedData(int,int,bool)));
   main_config->load();
 
   //
@@ -75,6 +77,7 @@ MainObject::MainObject(QObject *parent)
 
 void MainObject::matchFoundData(int chan_id,int pat_id)
 {
+  main_config->touchTimestamp(chan_id,pat_id);
   if(!main_config->string(chan_id,pat_id).isEmpty()) {
     LogMatch(chan_id,pat_id);
   }
@@ -110,7 +113,35 @@ void MainObject::collectGarbageData()
 }
 
 
+void MainObject::watchdogStateChangedData(int chan_id,int pat_id,bool state)
+{
+  LogWatchdog(chan_id,pat_id,state);
+  RunWatchdogScript(chan_id,pat_id,state);
+}
+
+
 void MainObject::LogMatch(int chan_id,int pat_id) const
+{
+  Log(chan_id,pat_id,main_config->string(chan_id,pat_id));
+}
+
+
+void MainObject::LogWatchdog(int chan_id,int pat_id,bool state) const
+{
+  if(state) {
+    if(!main_config->watchdogSetString(chan_id,pat_id).isEmpty()) {
+      Log(chan_id,pat_id,main_config->watchdogSetString(chan_id,pat_id));
+    }
+  }
+  else {
+    if(!main_config->watchdogResetString(chan_id,pat_id).isEmpty()) {
+      Log(chan_id,pat_id,main_config->watchdogResetString(chan_id,pat_id));
+    }
+  }
+}
+
+
+void MainObject::Log(int chan_id,int pat_id,const QString &msg) const
 {
   FILE *f=NULL;
   QDateTime now=QDateTime::currentDateTime();
@@ -128,7 +159,7 @@ void MainObject::LogMatch(int chan_id,int pat_id) const
   }
   fprintf(f,"%s: %s\n",(const char *)(now.toString("hh:mm:ss")+
 				      QString().sprintf(".%d",tenth)).toUtf8(),
-	  (const char *)main_config->string(chan_id,pat_id).toUtf8());
+	  (const char *)msg.toUtf8());
   fclose(f);
 }
 
@@ -143,6 +174,26 @@ void MainObject::RunMatchScript(int chan_id,int pat_id)
 	  this,SLOT(scriptFinishedData()));
   main_script_list.back()->start(main_config->script(chan_id,pat_id),args,
 				 main_config->channelLogFilename(chan_id));
+}
+
+
+void MainObject::RunWatchdogScript(int chan_id,int pat_id,bool state)
+{
+  if(!main_config->watchdogScript(chan_id,pat_id).isEmpty()) {
+    QStringList args;
+    args.push_back(main_config->pattern(chan_id,pat_id));
+    if(state) {
+      args.push_back("true");
+    }
+    else {
+      args.push_back("false");
+    }
+    main_script_list.push_back(new ScriptEvent(this));
+    connect(main_script_list.back(),SIGNAL(finished()),
+	    this,SLOT(scriptFinishedData()));
+    main_script_list.back()->start(main_config->watchdogScript(chan_id,pat_id),
+			       args,main_config->channelLogFilename(chan_id));
+  }
 }
 
 

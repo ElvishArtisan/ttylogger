@@ -44,10 +44,14 @@ class MainObject : public QObject
   void readyReadData();
   void scriptFinishedData();
   void collectGarbageData();
+  void watchdogStateChangedData(int chan_id,int pat_id,bool state);
 
  private:
   void LogMatch(int chan_id,int pat_id) const;
+  void LogWatchdog(int chan_id,int pat_id,bool state) const;
+  void Log(int chan_id,int pat_id,const QString &msg) const;
   void RunMatchScript(int chan_id,int pat_id);
+  void RunWatchdogScript(int chan_id,int pat_id,bool state);
   QList<Parser *> main_parsers;
   TTYDevice *main_tty_device;
   QList<ScriptEvent *> main_script_list;

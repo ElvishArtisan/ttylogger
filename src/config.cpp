@@ -22,8 +22,12 @@
 #include "config.h"
 #include "profile.h"
 
-Config::Config()
+Config::Config(QObject *parent)
+  : QObject(parent)
 {
+  conf_watchdog_timer=new QTimer(this);
+  connect(conf_watchdog_timer,SIGNAL(timeout()),
+	  this,SLOT(checkWatchdogsData()));
 }
 
 
@@ -96,6 +100,43 @@ QString Config::script(int chan,int pat) const
 }
 
 
+int Config::watchdogTimeout(int chan,int pat) const
+{
+  return conf_watchdog_timeouts.at(chan).at(pat);
+}
+
+
+QString Config::watchdogSetString(int chan,int pat) const
+{
+  return conf_watchdog_set_strings.at(chan).at(pat);
+}
+
+
+QString Config::watchdogResetString(int chan,int pat) const
+{
+  return conf_watchdog_reset_strings.at(chan).at(pat);
+}
+
+
+QString Config::watchdogScript(int chan,int pat) const
+{
+  return conf_watchdog_scripts.at(chan).at(pat);
+}
+
+
+QDateTime Config::timestamp(int chan,int pat)
+{
+  return conf_timestamps[chan][pat];
+}
+
+
+void Config::touchTimestamp(int chan,int pat)
+{
+  conf_timestamps[chan][pat].setDate(QDate::currentDate());
+  conf_timestamps[chan][pat].setTime(QTime::currentTime());
+}
+
+
 void Config::load()
 {
   Profile *p=new Profile();
@@ -126,14 +167,41 @@ void Config::load()
     conf_channel_patterns.push_back(QStringList());
     conf_channel_strings.push_back(QStringList());
     conf_channel_scripts.push_back(QStringList());
+    QList<int> timeouts;
+    conf_watchdog_timeouts.push_back(timeouts);
+    conf_watchdog_set_strings.push_back(QStringList());
+    conf_watchdog_reset_strings.push_back(QStringList());
+    conf_watchdog_scripts.push_back(QStringList());
+    QList<QDateTime> dts;
+    conf_timestamps.push_back(dts);
+    QList<bool> states;
+    conf_watchdog_states.push_back(states);
     int pattern=0;
     str=p->stringValue(section,QString().sprintf("Pattern%d",pattern+1),"",&ok);
     while(ok) {
       conf_channel_patterns.back().push_back(str);
       conf_channel_strings.back().
-        push_back(p->stringValue(section,QString().sprintf("String%d",pattern+1),str));
+        push_back(p->stringValue(section,QString().sprintf("String%d",
+							   pattern+1),str));
       conf_channel_scripts.back().
-        push_back(p->stringValue(section,QString().sprintf("Script%d",pattern+1)));
+        push_back(p->stringValue(section,QString().sprintf("Script%d",
+							   pattern+1)));
+
+      conf_watchdog_timeouts.back().
+        push_back(p->intValue(section,QString().sprintf("WatchdogTimeout%d",
+							pattern+1)));
+      conf_watchdog_set_strings.back().
+	push_back(p->stringValue(section,QString().
+				 sprintf("WatchdogSetString%d",pattern+1)));
+      conf_watchdog_reset_strings.back().
+        push_back(p->stringValue(section,QString().
+				 sprintf("WatchdogResetString%d",pattern+1)));
+      conf_watchdog_scripts.back().
+        push_back(p->stringValue(section,QString().sprintf("WatchdogScript%d",
+							   pattern+1)));
+      conf_timestamps.back().push_back(QDateTime());
+      conf_timestamps.back().back()=QDateTime::currentDateTime();
+      conf_watchdog_states.back().push_back(false);
       pattern++;
       str=p->stringValue(section,QString().sprintf("Pattern%d",pattern+1),"",
 			 &ok);
@@ -141,5 +209,31 @@ void Config::load()
     channel++;
     section=QString().sprintf("Channel%d",channel+1);
     str=p->stringValue(section,"Directory","",&ok);    
+  }
+  conf_watchdog_timer->start(1000);
+}
+
+
+void Config::checkWatchdogsData()
+{
+  QDateTime now=QDateTime::currentDateTime();
+
+  for(int i=0;i<conf_channel_patterns.size();i++) {
+    for(int j=0;j<conf_channel_patterns.at(i).size();j++) {
+      if(conf_watchdog_timeouts.at(i).at(j)>0) {
+	if((!conf_watchdog_states.at(i).at(j))&&
+	   (conf_timestamps.at(i).at(j).
+	    addSecs(conf_watchdog_timeouts.at(i).at(j))<now)) {
+	  conf_watchdog_states[i][j]=true;
+	  emit watchdogStateChanged(i,j,true);
+	}
+	if(conf_watchdog_states.at(i).at(j)&&
+	   (conf_timestamps.at(i).at(j).
+	    addSecs(conf_watchdog_timeouts.at(i).at(j))>now)) {
+	  conf_watchdog_states[i][j]=false;
+	  emit watchdogStateChanged(i,j,false);
+	}
+      }
+    }
   }
 }

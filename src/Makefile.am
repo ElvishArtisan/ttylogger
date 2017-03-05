@@ -38,7 +38,8 @@ dist_ttylogger_SOURCES = cmdswitch.cpp cmdswitch.h\
                          ttydevice.cpp ttydevice.h\
                          ttylogger.cpp ttylogger.h
 
-nodist_ttylogger_SOURCES = moc_parser.cpp\
+nodist_ttylogger_SOURCES = moc_config.cpp\
+                           moc_parser.cpp\
                            moc_scriptevent.cpp\
                            moc_ttydevice.cpp\
                            moc_ttylogger.cpp

@@ -23,17 +23,20 @@
 #define CONFIG_H
 
 #include <QList>
+#include <QObject>
 #include <QString>
 #include <QStringList>
+#include <QTimer>
 
 #include "ttydevice.h"
 
 #define CONFIG_FILE "/etc/ttylogger.conf"
 
-class Config
+class Config : public QObject
 {
+  Q_OBJECT;
  public:
-  Config();
+  Config(QObject *parent=0);
   QString ttyDevice() const;
   TTYDevice::Parity ttyParity() const;
   int ttySpeed() const;
@@ -45,7 +48,19 @@ class Config
   QString pattern(int chan,int pat) const;  
   QString string(int chan,int pat) const;
   QString script(int chan,int pat) const;
+  int watchdogTimeout(int chan,int pat) const;
+  QString watchdogSetString(int chan,int pat) const;
+  QString watchdogResetString(int chan,int pat) const;
+  QString watchdogScript(int chan,int pat) const;
+  QDateTime timestamp(int chan,int pat);
+  void touchTimestamp(int chan,int pat);
   void load();
+
+ signals:
+  void watchdogStateChanged(int chan_id,int pat_id,bool state);
+
+ private slots:
+  void checkWatchdogsData();
 
  private:
   QString conf_tty_device;
@@ -53,9 +68,16 @@ class Config
   int conf_tty_speed;
   int conf_tty_word_length;
   QStringList conf_channel_directories;
+  QTimer *conf_watchdog_timer;
   QList<QStringList> conf_channel_patterns;
   QList<QStringList> conf_channel_strings;
   QList<QStringList> conf_channel_scripts;
+  QList<QList<int> > conf_watchdog_timeouts;
+  QList<QStringList> conf_watchdog_set_strings;
+  QList<QStringList> conf_watchdog_reset_strings;
+  QList<QStringList> conf_watchdog_scripts;
+  QList<QList<QDateTime> > conf_timestamps;
+  QList<QList<bool> > conf_watchdog_states;
 };
 
 

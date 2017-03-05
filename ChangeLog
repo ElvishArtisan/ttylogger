@@ -4,3 +4,5 @@
 	* Implemented serial logging.
 2017-03-05 Fred Gleason <fredg@paravelsystems.com>
 	* Implemented serial scripts.
+2017-03-05 Fred Gleason <fredg@paravelsystems.com>
+	* Implemented serial watchdogs.
