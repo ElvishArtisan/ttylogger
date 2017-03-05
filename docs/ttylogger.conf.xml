@@ -4,14 +4,14 @@
       Header
   -->
   <refmeta>
-    <refentrytitle>lwlogger.conf</refentrytitle>
+    <refentrytitle>ttylogger.conf</refentrytitle>
     <manvolnum>5</manvolnum>
     <refmiscinfo class='source'>February 2017</refmiscinfo>
     <refmiscinfo class='manual'>Linux Audio Manual</refmiscinfo>
   </refmeta>
   <refnamediv>
-    <refname>lwlogger.conf</refname>
-    <refpurpose>Configuration file for the <command>lwlogger</command><manvolnum>8</manvolnum> logging service.</refpurpose>
+    <refname>ttylogger.conf</refname>
+    <refpurpose>Configuration file for the <command>ttylogger</command><manvolnum>8</manvolnum> logging service.</refpurpose>
   </refnamediv>
   <info>
     <author>
@@ -29,16 +29,16 @@
   -->
   <refsynopsisdiv id='synopsis'>
     <cmdsynopsis>
-      <command>/etc/lwlogger.conf</command>
+      <command>/etc/ttylogger.conf</command>
       <sbr/>
     </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1 id='description'><title>Description</title>
   <para>
-    The file <command>lwlogger.conf</command><manvolnum>5</manvolnum> defines
+    The file <command>ttylogger.conf</command><manvolnum>5</manvolnum> defines
     the set of LiveWire Multicast GPIO events to which the
-    <command>lwlogger</command><manvolnum>8</manvolnum> service should
+    <command>ttylogger</command><manvolnum>8</manvolnum> service should
     respond. Logs are written to one or more files in the directory
     indicated by the appropriate LogDir= parameter (see below), with
     filenames of the form &quot;YYYY-MM-DD.txt&quot;.
@@ -524,7 +524,7 @@
   <refsect1 id='see_also'><title>See Also</title>
   <para>
   <citerefentry>
-    <refentrytitle>lwlogger</refentrytitle><manvolnum>8</manvolnum>
+    <refentrytitle>ttylogger</refentrytitle><manvolnum>8</manvolnum>
   </citerefentry>
   </para>
   </refsect1>

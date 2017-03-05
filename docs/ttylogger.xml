@@ -4,13 +4,13 @@
       Header
   -->
   <refmeta>
-    <refentrytitle>lwlogger</refentrytitle>
+    <refentrytitle>ttylogger</refentrytitle>
     <manvolnum>8</manvolnum>
     <refmiscinfo class='source'>February 2017</refmiscinfo>
     <refmiscinfo class='manual'>Linux Audio Manual</refmiscinfo>
   </refmeta>
   <refnamediv>
-    <refname>lwlogger</refname>
+    <refname>ttylogger</refname>
     <refpurpose>Logging service for LiveWire Multicast GPIO events</refpurpose>
   </refnamediv>
   <info>
@@ -29,16 +29,16 @@
   -->
   <refsynopsisdiv id='synopsis'>
     <cmdsynopsis>
-      <command>lwlogger</command>
+      <command>ttylogger</command>
       <sbr/>
     </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1 id='description'><title>Description</title>
   <para>
-    <command>lwlogger</command><manvolnum>8</manvolnum> is a service
+    <command>ttylogger</command><manvolnum>8</manvolnum> is a service
     for logging LiveWire Multicast GPIO events. Operation of the service
-    is configured by means of the /etc/lwlogger.conf file.
+    is configured by means of the /etc/ttylogger.conf file.
   </para>
   </refsect1>
 
@@ -51,7 +51,7 @@
   <refsect1 id='see_also'><title>See Also</title>
   <para>
   <citerefentry>
-    <refentrytitle>lwlogger.conf</refentrytitle><manvolnum>5</manvolnum>
+    <refentrytitle>ttylogger.conf</refentrytitle><manvolnum>5</manvolnum>
   </citerefentry>
   </para>
   </refsect1>

@@ -30,10 +30,15 @@ moc_%.cpp:	%.h
 
 sbin_PROGRAMS = ttylogger
 
-dist_ttylogger_SOURCES = config.cpp config.h\
+dist_ttylogger_SOURCES = cmdswitch.cpp cmdswitch.h\
+                         config.cpp config.h\
+                         parser.cpp parser.h\
+                         profile.cpp profile.h\
+                         ttydevice.cpp ttydevice.h\
                          ttylogger.cpp ttylogger.h
 
-nodist_ttylogger_SOURCES = moc_config.cpp\
+nodist_ttylogger_SOURCES = moc_parser.cpp\
+                           moc_ttydevice.cpp\
                            moc_ttylogger.cpp
 
 ttylogger_LDADD = @QT4CLI_LIBS@

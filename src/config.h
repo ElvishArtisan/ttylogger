@@ -22,7 +22,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <QList>
 #include <QString>
+#include <QStringList>
+
+#include "ttydevice.h"
 
 #define CONFIG_FILE "/etc/ttylogger.conf"
 
@@ -30,7 +34,25 @@ class Config
 {
  public:
   Config();
-  bool load();
+  QString ttyDevice() const;
+  TTYDevice::Parity ttyParity() const;
+  int ttySpeed() const;
+  int ttyWordLength() const;
+  int channelQuantity() const;
+  QString channelDirectory(int chan) const;
+  int patternQuantity(int chan) const;
+  QString pattern(int chan,int pat) const;  
+  QString string(int chan,int pat) const;
+  void load();
+
+ private:
+  QString conf_tty_device;
+  TTYDevice::Parity conf_tty_parity;
+  int conf_tty_speed;
+  int conf_tty_word_length;
+  QStringList conf_channel_directories;
+  QList<QStringList> conf_channel_patterns;
+  QList<QStringList> conf_channel_strings;
 };
 
 

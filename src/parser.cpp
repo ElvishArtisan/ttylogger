@@ -1,6 +1,6 @@
-// ttylogger.h
+// parser.cpp
 //
-// ttylogger(8) serial logger
+// Find a matching string in a stream of characters
 //
 //   (C) Copyright 2017 Fred Gleason <fredg@paravelsystems.com>
 //
@@ -19,34 +19,33 @@
 //   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef TTYLOGGER_H
-#define TTYLOGGER_H
-
-#include <QList>
-#include <QObject>
-#include <QTimer>
-
-#include "config.h"
 #include "parser.h"
-#include "ttydevice.h"
 
-#define TTYLOGGER_USAGE "[options]\n"
-
-class MainObject : public QObject
+Parser::Parser(int chan_id,int pat_id)
 {
- Q_OBJECT;
- public:
-  MainObject(QObject *parent=0);
-
- private slots:
-  void matchFoundData(int chan_id,int pat_id);
-  void readyReadData();
-
- private:
-  QList<Parser *> main_parsers;
-  TTYDevice *main_tty_device;
-  Config *main_config;
-};
+  parser_channel_id=chan_id;
+  parser_pattern_id=pat_id;
+}
 
 
-#endif  // TTYLOGGER_H
+void Parser::setPattern(const QString &str)
+{
+  parser_pattern=str;
+  parser_istate=0;
+}
+
+
+void Parser::process(const QByteArray &data)
+{
+  for(int i=0;i<data.size();i++) {
+    if(data.at(i)==parser_pattern[parser_istate]) {
+      if(++parser_istate==parser_pattern.length()) {
+	emit matchFound(parser_channel_id,parser_pattern_id);
+	parser_istate=0;
+      }
+    }
+    else {
+      parser_istate=0;
+    }
+  }
+}
