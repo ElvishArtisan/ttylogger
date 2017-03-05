@@ -1,6 +1,6 @@
-// ttylogger.h
+// scriptevent.h
 //
-// ttylogger(8) serial logger
+// Execute a script
 //
 //   (C) Copyright 2017 Fred Gleason <fredg@paravelsystems.com>
 //
@@ -19,41 +19,36 @@
 //   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef TTYLOGGER_H
-#define TTYLOGGER_H
+#ifndef SCRIPTEVENT_H
+#define SCRIPTEVENT_H
 
-#include <QList>
 #include <QObject>
-#include <QTimer>
+#include <QProcess>
 
-#include "config.h"
-#include "parser.h"
-#include "scriptevent.h"
-#include "ttydevice.h"
-
-#define TTYLOGGER_USAGE "[options]\n"
-
-class MainObject : public QObject
+class ScriptEvent : public QObject
 {
- Q_OBJECT;
+  Q_OBJECT;
  public:
-  MainObject(QObject *parent=0);
+  ScriptEvent(QObject *parent=0);
+  ~ScriptEvent();
+  QProcess::ProcessState processState() const;
+
+ signals:
+  void finished();
+
+ public slots:
+  void start(const QString &pgm,const QStringList &args,const QString &logfile);
 
  private slots:
-  void matchFoundData(int chan_id,int pat_id);
-  void readyReadData();
-  void scriptFinishedData();
-  void collectGarbageData();
+  void processFinishedData(int exit_code,QProcess::ExitStatus status);
+  void processErrorData(QProcess::ProcessError err);
 
  private:
-  void LogMatch(int chan_id,int pat_id) const;
-  void RunMatchScript(int chan_id,int pat_id);
-  QList<Parser *> main_parsers;
-  TTYDevice *main_tty_device;
-  QList<ScriptEvent *> main_script_list;
-  QTimer *main_garbage_timer;
-  Config *main_config;
+  void Log(const QString &msg) const;
+  QProcess *script_process;
+  QString script_program;
+  QString script_logfile;
 };
 
 
-#endif  // TTYLOGGER_H
+#endif  // SCRIPTEVENT_H

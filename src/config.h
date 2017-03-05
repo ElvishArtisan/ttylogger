@@ -40,9 +40,11 @@ class Config
   int ttyWordLength() const;
   int channelQuantity() const;
   QString channelDirectory(int chan) const;
+  QString channelLogFilename(int chan,QDateTime now=QDateTime());
   int patternQuantity(int chan) const;
   QString pattern(int chan,int pat) const;  
   QString string(int chan,int pat) const;
+  QString script(int chan,int pat) const;
   void load();
 
  private:
@@ -53,6 +55,7 @@ class Config
   QStringList conf_channel_directories;
   QList<QStringList> conf_channel_patterns;
   QList<QStringList> conf_channel_strings;
+  QList<QStringList> conf_channel_scripts;
 };
 
 

@@ -66,30 +66,21 @@ MainObject::MainObject(QObject *parent)
 	    (const char *)main_tty_device->deviceName().toUtf8());
     exit(256);
   }
+
+  main_garbage_timer=new QTimer(this);
+  main_garbage_timer->setSingleShot(true);
+  connect(main_garbage_timer,SIGNAL(timeout()),this,SLOT(collectGarbageData()));
 }
 
 
 void MainObject::matchFoundData(int chan_id,int pat_id)
 {
-  FILE *f=NULL;
-  QDateTime now=QDateTime::currentDateTime();
-  int tenth=lround((double)now.time().msec()/100.0);
-  if(tenth==10) {
-    now.setTime(now.time().addSecs(1));
-    tenth=0;
+  if(!main_config->string(chan_id,pat_id).isEmpty()) {
+    LogMatch(chan_id,pat_id);
   }
-  QString filename=main_config->channelDirectory(chan_id)+
-    "/"+now.toString("yyyy-MM-dd")+".txt";
-  
-  if((f=fopen(filename.toUtf8(),"a"))==NULL) {
-    syslog(LOG_WARNING,"unable to open log file \"%s\"",
-	   (const char *)filename.toUtf8());
-    return;
+  if(!main_config->script(chan_id,pat_id).isEmpty()) {
+    RunMatchScript(chan_id,pat_id);
   }
-  fprintf(f,"%s: %s\n",(const char *)(now.toString("hh:mm:ss")+
-				      QString().sprintf(".%d",tenth)).toUtf8(),
-	  (const char *)main_config->string(chan_id,pat_id).toUtf8());
-  fclose(f);  
 }
 
 
@@ -99,6 +90,59 @@ void MainObject::readyReadData()
   for(int i=0;i<main_parsers.size();i++) {
     main_parsers.at(i)->process(data);
   }
+}
+
+
+void MainObject::scriptFinishedData()
+{
+  main_garbage_timer->start(1);
+}
+
+
+void MainObject::collectGarbageData()
+{
+  for(int i=main_script_list.size()-1;i>=0;i--) {
+    if(main_script_list.at(i)->processState()==QProcess::NotRunning) {
+      delete main_script_list.at(i);
+      main_script_list.erase(main_script_list.begin()+i);
+    }
+  }
+}
+
+
+void MainObject::LogMatch(int chan_id,int pat_id) const
+{
+  FILE *f=NULL;
+  QDateTime now=QDateTime::currentDateTime();
+  int tenth=lround((double)now.time().msec()/100.0);
+  if(tenth==10) {
+    now.setTime(now.time().addSecs(1));
+    tenth=0;
+  }
+  QString filename=main_config->channelLogFilename(chan_id,now);
+  
+  if((f=fopen(filename.toUtf8(),"a"))==NULL) {
+    syslog(LOG_WARNING,"unable to open log file \"%s\"",
+	   (const char *)filename.toUtf8());
+    return;
+  }
+  fprintf(f,"%s: %s\n",(const char *)(now.toString("hh:mm:ss")+
+				      QString().sprintf(".%d",tenth)).toUtf8(),
+	  (const char *)main_config->string(chan_id,pat_id).toUtf8());
+  fclose(f);
+}
+
+
+void MainObject::RunMatchScript(int chan_id,int pat_id)
+{
+  QStringList args;
+  args.push_back(main_config->pattern(chan_id,pat_id));
+
+  main_script_list.push_back(new ScriptEvent(this));
+  connect(main_script_list.back(),SIGNAL(finished()),
+	  this,SLOT(scriptFinishedData()));
+  main_script_list.back()->start(main_config->script(chan_id,pat_id),args,
+				 main_config->channelLogFilename(chan_id));
 }
 
 

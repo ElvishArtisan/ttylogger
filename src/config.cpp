@@ -63,6 +63,15 @@ QString Config::channelDirectory(int chan) const
 }
 
 
+QString Config::channelLogFilename(int chan,QDateTime now)
+{
+  if(now.isNull()) {
+    now=QDateTime::currentDateTime();
+  }
+  return channelDirectory(chan)+"/"+now.toString("yyyy-MM-dd")+".txt";
+}
+
+
 int Config::patternQuantity(int chan) const
 {
   return conf_channel_patterns.at(chan).size();
@@ -78,6 +87,12 @@ QString Config::pattern(int chan,int pat) const
 QString Config::string(int chan,int pat) const
 {
   return conf_channel_strings.at(chan).at(pat);
+}
+
+
+QString Config::script(int chan,int pat) const
+{
+  return conf_channel_scripts.at(chan).at(pat);
 }
 
 
@@ -110,12 +125,15 @@ void Config::load()
     conf_channel_directories.push_back(str);
     conf_channel_patterns.push_back(QStringList());
     conf_channel_strings.push_back(QStringList());
+    conf_channel_scripts.push_back(QStringList());
     int pattern=0;
     str=p->stringValue(section,QString().sprintf("Pattern%d",pattern+1),"",&ok);
     while(ok) {
       conf_channel_patterns.back().push_back(str);
       conf_channel_strings.back().
         push_back(p->stringValue(section,QString().sprintf("String%d",pattern+1),str));
+      conf_channel_scripts.back().
+        push_back(p->stringValue(section,QString().sprintf("Script%d",pattern+1)));
       pattern++;
       str=p->stringValue(section,QString().sprintf("Pattern%d",pattern+1),"",
 			 &ok);
