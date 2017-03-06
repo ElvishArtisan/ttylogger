@@ -1,4 +1,4 @@
-## lwlogger.spec.in
+## ttylogger.spec.in
 ##
 ##    GPIO logger for LiveWire.
 ##
@@ -20,7 +20,7 @@
 ##
 
 Summary: GPIO logger for LiveWire networks
-Name: lwlogger
+Name: ttylogger
 Version: @VERSION@
 Release: @RPM_RELEASE@%{?dist}
 License: GPLv2
@@ -32,7 +32,7 @@ BuildRoot: /var/tmp/%{name}-@VERSION@
 
 
 %description
-LWLogger is a utility for logging LiveWire GPIO events.
+Ttylogger is a utility for logging serial data messages.
 
 
 %prep
@@ -58,8 +58,8 @@ fi
 if test "@DISTRO@" = "redhat" ; then
   PACKAGE_DOC_DIR=%_docdir/%{name}-@VERSION@
 fi
-if test ! -f /etc/lwlogger.conf ; then
-    cp $PACKAGE_DOC_DIR/lwlogger-sample.conf /etc/lwlogger.conf
+if test ! -f /etc/ttylogger.conf ; then
+    cp $PACKAGE_DOC_DIR/ttylogger-sample.conf /etc/ttylogger.conf
 fi
 if [ -x %{_bindir}/systemctl ] ; then
   systemctl daemon-reload
@@ -68,7 +68,7 @@ fi
 
 %preun
 if [ -x %{_bindir}/systemctl ] ; then
-  systemctl stop lwlogger
+  systemctl stop ttylogger
 fi
 
 
@@ -84,19 +84,19 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%{_sbindir}/lwlogger
-%{_mandir}/man5/lwlogger.conf.5.gz
-%{_mandir}/man8/lwlogger.8.gz
-/usr/lib/systemd/system/lwlogger.service
+%{_sbindir}/ttylogger
+%{_mandir}/man5/ttylogger.conf.5.gz
+%{_mandir}/man8/ttylogger.8.gz
+/usr/lib/systemd/system/ttylogger.service
 %dir /var/cache/aoip
 %doc AUTHORS
 %doc ChangeLog
 %doc COPYING 
 %doc NEWS 
 %doc README 
-%doc conf/lwlogger-sample.conf
+%doc conf/ttylogger-sample.conf
 
 
 %changelog
-* Mon Dec 26 2016 Fred Gleason <fredg@paravelsystems.com>
+* Mon Mar  6 2017 Fred Gleason <fredg@paravelsystems.com>
 -- Initial RPM creation.

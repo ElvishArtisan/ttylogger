@@ -8,3 +8,6 @@
 	* Implemented serial watchdogs.
 2017-03-05 Fred Gleason <fredg@paravelsystems.com>
 	* Added ttylogger(8) and ttylogger.conf(5) man pages.
+2017-03-06 Fred Gleason <fredg@paravelsystems.com>
+	* Fixed bugs in 'ttylogger.spec.in' that broke the 'make rpm'
+	target.
