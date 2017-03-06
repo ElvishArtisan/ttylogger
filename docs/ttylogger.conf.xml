@@ -37,10 +37,9 @@
   <refsect1 id='description'><title>Description</title>
   <para>
     The file <command>ttylogger.conf</command><manvolnum>5</manvolnum> defines
-    the set of LiveWire Multicast GPIO events to which the
-    <command>ttylogger</command><manvolnum>8</manvolnum> service should
-    respond. Logs are written to one or more files in the directory
-    indicated by the appropriate LogDir= parameter (see below), with
+    the set of textual sub-strings (or "patterns") for which to write log
+    messages. Logs are written to one or more files in the directory
+    indicated by the appropriate Directory= parameter (see below), with
     filenames of the form &quot;YYYY-MM-DD.txt&quot;.
   </para>
   </refsect1>
@@ -56,140 +55,140 @@
   </para>
   </refsect1>
 
-  <refsect1 id='parameters'><title>Parameters</title>
+  <refsect1 id='global_section'><title>The <userinput>[Global]</userinput> Section</title>
   <para>
-    Each section can contain zero or more of the following parameters:
+    The <userinput>[Global]</userinput> section defines parameters that affect
+    operation of the overall service, such as serial device parameters.
   </para>
   <variablelist>
     <varlistentry>
       <term>
-	Gpi<replaceable>linenum</replaceable>LogDir=<replaceable>dirname</replaceable>
+	TtyDevice=<replaceable>device</replaceable>
       </term>
       <listitem>
 	<para>
-	  Write log entries for GPI line <replaceable>linenum</replaceable>
-	  to the <replaceable>dirname</replaceable> directory.
+	  Use the <replaceable>device</replaceable> serial device for
+	  capturing messages. Default value is
+	  <userinput>/dev/ttyS0</userinput>.
 	</para>
       </listitem>
     </varlistentry>
     <varlistentry>
       <term>
-	Gpi<replaceable>linenum</replaceable>On=<replaceable>text</replaceable>
+	TtySpeed=<replaceable>bps</replaceable>
       </term>
       <listitem>
 	<para>
-	  Write <replaceable>text</replaceable> to the log for each GPI ON
-	  event received for line <replaceable>linenum</replaceable>.
+	  Use a baud-rate of <replaceable>bps</replaceable> bits per second.
+	  Default value is <userinput>9600</userinput>.
 	</para>
       </listitem>
     </varlistentry>
     <varlistentry>
       <term>
-	Gpi<replaceable>linenum</replaceable>Off=<replaceable>text</replaceable>
+	TtyParity=<replaceable>parity</replaceable>
       </term>
       <listitem>
 	<para>
-	  Write <replaceable>text</replaceable> to the log for each GPI OFF
-	  event received for line <replaceable>linenum</replaceable>.
+	  Set the parity to use. Valid values are <userinput>Even</userinput>,
+	  <userinput>Odd</userinput> and <userinput>None</userinput>. Default
+	  value is <userinput>None</userinput>.
 	</para>
       </listitem>
     </varlistentry>
     <varlistentry>
       <term>
-	Gpi<replaceable>linenum</replaceable>Pulse=<replaceable>text</replaceable>
+	TtyWordLength=<replaceable>bits</replaceable>
       </term>
       <listitem>
 	<para>
-	  Write <replaceable>text</replaceable> to the log for each GPI PULSE
-	  event received for line <replaceable>linenum</replaceable>.
+	  Use <replaceable>bits</replaceable> bits for the data bits.
+	  Default value is <userinput>8</userinput>.
+	</para>
+      </listitem>
+    </varlistentry>
+  </variablelist>
+  </refsect1>
+
+  <refsect1 id='channel_section'><title>The <userinput>[Channel]</userinput>
+  Sections</title>
+  <para>
+    One or more <userinput>[Channel<replaceable>n</replaceable>]</userinput>
+    sections must be present, with each section being consecutively numbered
+    with <replaceable>n</replaceable>, starting at <userinput>1</userinput>.
+    Each such section may contain the following parameters:
+  </para>
+  <variablelist>
+    <varlistentry>
+      <term>
+	Directory=<replaceable>path</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Write the log files for this Channel to the
+	  <replaceable>path</replaceable> directory.
+	  Filenames so written are of the form &quot;YYYY-MM-DD.txt&quot;.
+	  Each <userinput>[Channel<replaceable>n</replaceable>]</userinput>
+	  section must contain exactly one Directory= parameter.
 	</para>
       </listitem>
     </varlistentry>
     <varlistentry>
       <term>
-	Gpi<replaceable>linenum</replaceable>Action=<replaceable>script</replaceable>
+	Pattern<replaceable>p</replaceable>=<replaceable>pat</replaceable>
       </term>
       <listitem>
 	<para>
-	  Execute the <replaceable>script</replaceable> script upon the
-	  receipt of a GPI event for line <replaceable>linenum</replaceable>.
-	  The script will be called with the following arguments:
+	  Monitor the serial stream of for the character sequence
+	  <replaceable>pat</replaceable>. Multiple
+	  Pattern<replaceable>p</replaceable>= parameters may be specified,
+	  by incrementing <replaceable>p</replaceable>.
+	</para>
+	<para>
+	  When a pattern is detected, one or more actions will occur as
+	  directed by the String<replaceable>p</replaceable>= or
+	  Script<replaceable>p</replaceable>= parameters. Additionally,
+	  a "watchdog" can be set that will generate actions when more than
+	  a set time passes without detection of the pattern. See the
+	  WatchdogTimeout<replaceable>p</replaceable>=, 
+	  WatchdogSetString<replaceable>p</replaceable>=, 
+	  WatchdogResetString<replaceable>p</replaceable>= and 
+	  WatchdogScript<replaceable>p</replaceable>= parameters, below.
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
+	String<replaceable>p</replaceable>=<replaceable>str</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Log the string <replaceable>str</replaceable> to the log.
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
+	Script<replaceable>p</replaceable>=<replaceable>str</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Execute the script <replaceable>script</replaceable>. The
+	  script is called with the following argument:
 	</para>
 	<para>
 	  <command><replaceable>script</replaceable></command>
-	  <arg choice='req'><replaceable>type</replaceable></arg>
-	  <arg choice='req'><replaceable>src-num</replaceable></arg>
-	  <arg choice='req'><replaceable>line</replaceable></arg>
-	  <arg choice='req'><replaceable>state</replaceable></arg>
-	  <arg choice='req'><replaceable>is-pulse</replaceable></arg>
-	  <arg choice='req'><replaceable>orig-addr</replaceable></arg>
-	  <arg choice='req'><replaceable>orig-port</replaceable></arg>
+	  <arg choice='req'><replaceable>pat</replaceable></arg>
 	</para>
 	<para>
 	  <variablelist>
 	    <varlistentry>
 	      <term>
-		<replaceable>type</replaceable>
+		<replaceable>pat</replaceable>
 	      </term>
 	      <listitem>
 		<para>
-		  The type of event.
-		  (&quot;<computeroutput>gpi</computeroutput>&quot;
-		  or &quot;<computeroutput>gpo</computeroutput>&quot;)
-		</para>
-	      </listitem>
-	    </varlistentry>
-	    <varlistentry>
-	      <term>
-		<replaceable>src-num</replaceable>
-	      </term>
-	      <listitem>
-		<para>
-		  The LiveWire source number.
-		</para>
-	      </listitem>
-	    </varlistentry>
-	    <varlistentry>
-	      <term>
-		<replaceable>state</replaceable>
-	      </term>
-	      <listitem>
-		<para>
-		  The new state.
-		  (&quot;<computeroutput>true</computeroutput>&quot;
-		  or &quot;<computeroutput>false</computeroutput>&quot;)
-		</para>
-	      </listitem>
-	    </varlistentry>
-	    <varlistentry>
-	      <term>
-		<replaceable>is-pulse</replaceable>
-	      </term>
-	      <listitem>
-		<para>
-		  Event is a pulse event.
-		  (&quot;<computeroutput>true</computeroutput>&quot;
-		  or &quot;<computeroutput>false</computeroutput>&quot;)
-		</para>
-	      </listitem>
-	    </varlistentry>
-	    <varlistentry>
-	      <term>
-		<replaceable>orig-addr</replaceable>
-	      </term>
-	      <listitem>
-		<para>
-		  The IPv4 address of the originating device.
-		</para>
-	      </listitem>
-	    </varlistentry>
-	    <varlistentry>
-	      <term>
-		<replaceable>orig-port</replaceable>
-	      </term>
-	      <listitem>
-		<para>
-		  The number of the originating UDP port.
+		  The pattern that generated the event.
 		</para>
 	      </listitem>
 	    </varlistentry>
@@ -199,42 +198,62 @@
     </varlistentry>
     <varlistentry>
       <term>
-	Gpi<replaceable>linenum</replaceable>WatchdogAction=<replaceable>script</replaceable>
+	WatchdogTimeout<replaceable>p</replaceable>=<replaceable>secs</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Generate a watchdog Set event if more than
+	  <replaceable>secs</replaceable> elapse without detection of the
+	  pattern.
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
+	WatchdogSetString<replaceable>p</replaceable>=<replaceable>str</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Write <replaceable>str</replaceable> to the log when a watchdog
+	  Set event is generated.
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
+	WatchdogResetString<replaceable>p</replaceable>=<replaceable>str</replaceable>
+      </term>
+      <listitem>
+	<para>
+	  Write <replaceable>str</replaceable> to the log when a watchdog
+	  Reset event is generated.
+	</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>
+	WatchdogScript<replaceable>p</replaceable>=<replaceable>script</replaceable>
       </term>
       <listitem>
 	<para>
 	  Execute the <replaceable>script</replaceable> script when a
-	  Watchdog SET or RESET event is triggered for this GPI.
-	  The script will be called with the following arguments:
+	  watchdog Set or Reset event is generated. The script will be
+	  called with the following arguments:
 	</para>
 	<para>
 	  <command><replaceable>script</replaceable></command>
-	  <arg choice='req'><replaceable>type</replaceable></arg>
-	  <arg choice='req'><replaceable>src-num</replaceable></arg>
-	  <arg choice='req'><replaceable>line</replaceable></arg>
-	  <arg choice='req'><replaceable>set-state</replaceable></arg>
+	  <arg choice='req'><replaceable>pat</replaceable></arg>
+	  <arg choice='req'><replaceable>state</replaceable></arg>
 	</para>
 	<para>
 	  <variablelist>
 	    <varlistentry>
 	      <term>
-		<replaceable>type</replaceable>
+		<replaceable>pat</replaceable>
 	      </term>
 	      <listitem>
 		<para>
-		  The type of event.
-		  (&quot;<computeroutput>gpi</computeroutput>&quot;
-		  or &quot;<computeroutput>gpo</computeroutput>&quot;)
-		</para>
-	      </listitem>
-	    </varlistentry>
-	    <varlistentry>
-	      <term>
-		<replaceable>src-num</replaceable>
-	      </term>
-	      <listitem>
-		<para>
-		  The LiveWire source number.
+		  The pattern that generated the event.
 		</para>
 	      </listitem>
 	    </varlistentry>
@@ -254,263 +273,37 @@
 	</para>
       </listitem>
     </varlistentry>
-    <varlistentry>
-      <term>
-	Gpi<replaceable>linenum</replaceable>WatchdogReset=<replaceable>text</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Write <replaceable>text</replaceable> to the log for each Watchdog
-	  RESET event triggered for line <replaceable>linenum</replaceable>.
-	</para>
-      </listitem>
-    </varlistentry>
-    <varlistentry>
-      <term>
-	Gpi<replaceable>linenum</replaceable>WatchdogSet=<replaceable>text</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Write <replaceable>text</replaceable> to the log for each Watchdog
-	  SET event triggered for line <replaceable>linenum</replaceable>.
-	</para>
-      </listitem>
-    </varlistentry>
-    <varlistentry>
-      <term>
-	Gpi<replaceable>linenum</replaceable>WatchdogTimeout=<replaceable>secs</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Trigger a Watchdog SET event if no GPI transition (On, Off or Pulse)
-	  has been received after <replaceable>secs</replaceable> seconds.
-	  Default value is <userinput>0</userinput>, which disables
-	  Watchdog events for this GPI.
-	</para>
-      </listitem>
-    </varlistentry>
-    <varlistentry>
-      <term>
-	Gpo<replaceable>linenum</replaceable>LogDir=<replaceable>dirname</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Write log entries for GPO line <replaceable>linenum</replaceable>
-	  to the <replaceable>dirname</replaceable> directory.
-	</para>
-      </listitem>
-    </varlistentry>
-    <varlistentry>
-      <term>
-	Gpo<replaceable>linenum</replaceable>On=<replaceable>text</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Write <replaceable>text</replaceable> to the log for each GPO ON
-	  event received for line <replaceable>linenum</replaceable>.
-	</para>
-      </listitem>
-    </varlistentry>
-    <varlistentry>
-      <term>
-	Gpo<replaceable>linenum</replaceable>Off=<replaceable>text</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Write <replaceable>text</replaceable> to the log for each GPO OFF
-	  event received for line <replaceable>linenum</replaceable>.
-	</para>
-      </listitem>
-    </varlistentry>
-    <varlistentry>
-      <term>
-	Gpo<replaceable>linenum</replaceable>Pulse=<replaceable>text</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Write <replaceable>text</replaceable> to the log for each GPO PULSE
-	  event received for line <replaceable>linenum</replaceable>.
-	</para>
-      </listitem>
-    </varlistentry>
-    <varlistentry>
-      <term>
-	Gpo<replaceable>linenum</replaceable>Action=<replaceable>script</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Execute the <replaceable>script</replaceable> script upon the
-	  receipt of a GPO event for line <replaceable>linenum</replaceable>.
-	  See the Gpi<replaceable>linenum</replaceable>Action parameter for
-	  the list of arguments provided to <replaceable>script</replaceable>.
-	</para>
-      </listitem>
-    </varlistentry>
-
-
-
-
-    <varlistentry>
-      <term>
-	Gpo<replaceable>linenum</replaceable>WatchdogAction=<replaceable>script</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Execute the <replaceable>script</replaceable> script when a
-	  Watchdog SET or RESET event is triggered for this GPO.
-	  See the Gpi<replaceable>linenum</replaceable>WatchdogAction
-	  parameter for the list of arguments provided to
-	  <replaceable>script</replaceable>.
-	</para>
-      </listitem>
-    </varlistentry>
-    <varlistentry>
-      <term>
-	Gpo<replaceable>linenum</replaceable>WatchdogReset=<replaceable>text</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Write <replaceable>text</replaceable> to the log for each Watchdog
-	  RESET event triggered for line <replaceable>linenum</replaceable>.
-	</para>
-      </listitem>
-    </varlistentry>
-    <varlistentry>
-      <term>
-	Gpo<replaceable>linenum</replaceable>WatchdogSet=<replaceable>text</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Write <replaceable>text</replaceable> to the log for each Watchdog
-	  SET event triggered for line <replaceable>linenum</replaceable>.
-	</para>
-      </listitem>
-    </varlistentry>
-    <varlistentry>
-      <term>
-	Gpo<replaceable>linenum</replaceable>WatchdogTimeout=<replaceable>secs</replaceable>
-      </term>
-      <listitem>
-	<para>
-	  Trigger a Watchdog SET event if no GPO transition (On, Off or Pulse)
-	  has been received after <replaceable>secs</replaceable> seconds.
-	  Default value is <userinput>0</userinput>, which disables
-	  Watchdog events for this GPO.
-	</para>
-      </listitem>
-    </varlistentry>
-
-
-
   </variablelist>
   </refsect1>
 
   <refsect1 id='example'><title>Example</title>
   <para>
-    Following is an example of parameters for events from LiveWire source
-    &quot;1000&quot;:
+    Following is an example of parameters for a serial stream:
   </para>
   <programlisting>
-    [1000]GPO
-    Gpi1LogDir=/var/www/html
-    Gpi1On=GPI 1000-1 ON
-    Gpi1Off=GPI 1000-1 OFF
-    Gpi1Pulse=GPI 1000-1 PULSED
-    Gpi1Action=/usr/local/bin/script.sh
-    Gpi1WatchdogSet=GPI 1000-1 Watchdog Set
-    Gpi1WatchdogReset=GPI 1000-1 Watchdog Reset
-    Gpi1WatchdogTimeout=5
-    Gpi1WatchdogAction=/usr/local/bin/script.sh
+[Global]
+TtyDevice=/dev/ttyS0
+TtySpeed=9600
+TtyParity=None
+TtyWordLength=8
 
-    Gpi2LogDir=/var/www/html
-    Gpi2On=GPI 1000-2 ON
-    Gpi2Off=GPI 1000-2 OFF
-    Gpi2Pulse=GPI 1000-2 PULSED
-    Gpi2Action=/usr/local/bin/script.sh
-    Gpi2WatchdogSet=GPI 1000-2 Watchdog Set
-    Gpi2WatchdogReset=GPI 1000-2 Watchdog Reset
-    Gpi2WatchdogTimeout=5
-    Gpi2WatchdogAction=/usr/local/bin/script.sh
+[Channel1]
+Directory=/var/www/html/tty
+Pattern1=#BOB@
+String1=The #BOB@ pattern was detected!
+Script1=/usr/local/bin/script.sh
+WatchdogTimeout1=5
+WatchdogSetString1=The #BOB@ pattern has failed!
+WatchdogResetString1=The #BOB@ pattern has returned!
+WatchdogScript1=/usr/local/bin/script.sh
 
-    Gpi3LogDir=/var/www/html
-    Gpi3On=GPI 1000-3 ON
-    Gpi3Off=GPI 1000-3 OFF
-    Gpi3Pulse=GPI 1000-3 PULSED
-    Gpi3Action=/usr/local/bin/script.sh
-    Gpi3WatchdogSet=GPI 1000-3 Watchdog Set
-    Gpi3WatchdogReset=GPI 1000-3 Watchdog Reset
-    Gpi3WatchdogTimeout=5
-    Gpi3WatchdogAction=/usr/local/bin/script.sh
-
-    Gpi4LogDir=/var/www/html
-    Gpi4On=GPI 1000-4 ON
-    Gpi4Off=GPI 1000-4 OFF
-    Gpi4Pulse=GPI 1000-4 PULSED
-    Gpi4Action=/usr/local/bin/script.sh
-    Gpi4WatchdogSet=GPI 1000-4 Watchdog Set
-    Gpi4WatchdogReset=GPI 1000-4 Watchdog Reset
-    Gpi4WatchdogTimeout=5
-    Gpi4WatchdogAction=/usr/local/bin/script.sh
-
-    Gpi5LogDir=/var/www/html
-    Gpi5On=GPI 1000-5 ON
-    Gpi5Off=GPI 1000-5 OFF
-    Gpi5Pulse=GPI 1000-5 PULSED
-    Gpi5Action=/usr/local/bin/script.sh
-    Gpi5WatchdogSet=GPI 1000-5 Watchdog Set
-    Gpi5WatchdogReset=GPI 1000-5 Watchdog Reset
-    Gpi5WatchdogTimeout=5
-    Gpi5WatchdogAction=/usr/local/bin/script.sh
-
-    Gpo1LogDir=/var/www/html
-    Gpo1On=GPO 1000-1 ON
-    Gpo1Off=GPO 1000-1 OFF
-    Gpo1Pulse=GPO 1000-1 PULSED
-    Gpo1Action=/usr/local/bin/script.sh
-    Gpo1WatchdogSet=GPO 1000-1 Watchdog Set
-    Gpo1WatchdogReset=GPO 1000-1 Watchdog Reset
-    Gpo1WatchdogTimeout=5
-    Gpo1WatchdogAction=/usr/local/bin/script.sh
-
-    Gpo2LogDir=/var/www/html
-    Gpo2On=GPO 1000-2 ON
-    Gpo2Off=GPO 1000-2 OFF
-    Gpo2Pulse=GPO 1000-2 PULSED
-    Gpo2Action=/usr/local/bin/script.sh
-    Gpo2WatchdogSet=GPO 1000-2 Watchdog Set
-    Gpo2WatchdogReset=GPO 1000-2 Watchdog Reset
-    Gpo2WatchdogTimeout=5
-    Gpo2WatchdogAction=/usr/local/bin/script.sh
-
-    Gpo3LogDir=/var/www/html
-    Gpo3On=GPO 1000-3 ON
-    Gpo3Off=GPO 1000-3 OFF
-    Gpo3Pulse=GPO 1000-3 PULSED
-    Gpo3Action=/usr/local/bin/script.sh
-    Gpo3WatchdogSet=GPO 1000-3 Watchdog Set
-    Gpo3WatchdogReset=GPO 1000-3 Watchdog Reset
-    Gpo3WatchdogTimeout=5
-    Gpo3WatchdogAction=/usr/local/bin/script.sh
-
-    Gpo4LogDir=/var/www/html
-    Gpo4On=GPO 1000-4 ON
-    Gpo4Off=GPO 1000-4 OFF
-    Gpo4Pulse=GPO 1000-4 PULSED
-    Gpo4Action=/usr/local/bin/script.sh
-    Gpo4WatchdogSet=GPO 1000-4 Watchdog Set
-    Gpo4WatchdogReset=GPO 1000-4 Watchdog Reset
-    Gpo4WatchdogTimeout=5
-    Gpo4WatchdogAction=/usr/local/bin/script.sh
-
-    Gpo5LogDir=/var/www/html
-    Gpo5On=GPO 1000-5 ON
-    Gpo5Off=GPO 1000-5 OFF
-    Gpo5Pulse=GPO 1000-5 PULSED
-    Gpo5Action=/usr/local/bin/script.sh
-    Gpo5WatchdogSet=GPO 1000-5 Watchdog Set
-    Gpo5WatchdogReset=GPO 1000-5 Watchdog Reset
-    Gpo5WatchdogTimeout=5
-    Gpo5WatchdogAction=/usr/local/bin/script.sh
+Pattern2=#T48@
+String2=The #T48@ pattern was detected!
+Script2=/usr/local/bin/script.sh
+WatchdogTimeout2=5
+WatchdogSetString2=The #T48@ pattern has failed!
+WatchdogResetString2=Thje #T48@ pattern has returned!
+WatchdogScript2=/usr/local/bin/script.sh
  </programlisting>
 
   </refsect1>

@@ -6,12 +6,12 @@
   <refmeta>
     <refentrytitle>ttylogger</refentrytitle>
     <manvolnum>8</manvolnum>
-    <refmiscinfo class='source'>February 2017</refmiscinfo>
+    <refmiscinfo class='source'>March 2017</refmiscinfo>
     <refmiscinfo class='manual'>Linux Audio Manual</refmiscinfo>
   </refmeta>
   <refnamediv>
     <refname>ttylogger</refname>
-    <refpurpose>Logging service for LiveWire Multicast GPIO events</refpurpose>
+    <refpurpose>Logging service for serial data streams</refpurpose>
   </refnamediv>
   <info>
     <author>
@@ -37,8 +37,8 @@
   <refsect1 id='description'><title>Description</title>
   <para>
     <command>ttylogger</command><manvolnum>8</manvolnum> is a service
-    for logging LiveWire Multicast GPIO events. Operation of the service
-    is configured by means of the /etc/ttylogger.conf file.
+    for logging reception of textual streams via RS-232 serial connections.
+    It is configured by means of the /etc/ttylogger.conf file.
   </para>
   </refsect1>
 
